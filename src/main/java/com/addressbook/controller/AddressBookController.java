@@ -1,7 +1,7 @@
 /*
  * Project Name: Address Book Application
- * Use Case: Section 2 - UC1
- * Description: Handles REST requests using AddressBook DTO and Model.
+ * Use Case: Section 2 - UC2
+ * Description: Handles REST requests and delegates business logic to the service layer.
  * Name: Asher Mustafa
  * @author Asher
  * Date: 13/11/2026
@@ -10,8 +10,7 @@
 package com.addressbook.controller;
 
 import com.addressbook.dto.AddressBookDTO;
-import com.addressbook.mapper.AddressBookMapper;
-import com.addressbook.model.AddressBook;
+import com.addressbook.service.AddressBookService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,19 +19,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/addressbook")
 public class AddressBookController {
 
-    // [Asher Mustafa]: Logger for tracking API operations
     private static final Logger logger =
             LoggerFactory.getLogger(AddressBookController.class);
 
-    // [Asher Mustafa]: Temporary ID counter; persistent storage comes in UC3
-    private int idCounter = 1;
+    // [Asher Mustafa]: Service interface dependency
+    private final AddressBookService addressBookService;
+
+    // [Asher Mustafa]: Constructor injection
+    public AddressBookController(AddressBookService addressBookService) {
+        this.addressBookService = addressBookService;
+    }
 
     // [Asher Mustafa]: GET: Retrieve all contacts
     @GetMapping({"", "/"})
@@ -40,46 +42,35 @@ public class AddressBookController {
 
         logger.info("GET request received for all contacts");
 
-        // [Asher Mustafa]: No in-memory storage is implemented in this UC
-        return ResponseEntity.ok(new ArrayList<>());
+        return ResponseEntity.ok(addressBookService.getAllContacts());
     }
 
     // [Asher Mustafa]: GET: Retrieve contact using ID
     @GetMapping("/get/{id}")
-    public ResponseEntity<AddressBookDTO> getContactById(@PathVariable("id") int id) {
+    public ResponseEntity<AddressBookDTO> getContactById(
+            @PathVariable("id") int id) {
 
         logger.info("GET request received for contact ID: {}", id);
 
-        // [Asher Mustafa]: Demonstration model for this use case
-        AddressBook model = new AddressBook(
-                id,
-                "Sample",
-                "Contact",
-                "9876543210"
+        return ResponseEntity.ok(
+                addressBookService.getContactById(id)
         );
-
-        AddressBookDTO dto = AddressBookMapper.toDTO(model);
-
-        return ResponseEntity.ok(dto);
     }
 
-    // [Asher Mustafa]: POST: Create a contact using DTO
+    // [Asher Mustafa]: POST: Create a contact
     @PostMapping("/create")
     public ResponseEntity<AddressBookDTO> createContact(
             @RequestBody AddressBookDTO dto) {
 
         logger.info("POST request received to create contact");
 
-        // [Asher Mustafa]: Convert incoming DTO into Model
-        AddressBook model = AddressBookMapper.toModel(dto, idCounter++);
+        AddressBookDTO response =
+                addressBookService.createContact(dto);
 
-        // [Asher Mustafa]: Convert Model back into DTO for API response
-        AddressBookDTO responseDTO = AddressBookMapper.toDTO(model);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // [Asher Mustafa]: PUT: Update contact using ID
+    // [Asher Mustafa]: PUT: Update a contact
     @PutMapping("/update/{id}")
     public ResponseEntity<AddressBookDTO> updateContact(
             @PathVariable("id") int id,
@@ -87,22 +78,20 @@ public class AddressBookController {
 
         logger.info("PUT request received for contact ID: {}", id);
 
-        // [Asher Mustafa]: Create updated Model from the incoming DTO
-        AddressBook model = AddressBookMapper.toModel(dto, id);
-
-        AddressBookDTO responseDTO = AddressBookMapper.toDTO(model);
-
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.ok(
+                addressBookService.updateContact(id, dto)
+        );
     }
 
-    // [Asher Mustafa]: DELETE: Demonstrate delete request
+    // [Asher Mustafa]: DELETE: Delete a contact
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteContact(@PathVariable("id") int id) {
+    public ResponseEntity<String> deleteContact(
+            @PathVariable("id") int id) {
 
         logger.info("DELETE request received for contact ID: {}", id);
 
         return ResponseEntity.ok(
-                "DELETE request successful for ID: " + id
+                addressBookService.deleteContact(id)
         );
     }
 }
