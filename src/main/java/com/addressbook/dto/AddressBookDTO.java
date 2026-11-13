@@ -1,7 +1,7 @@
 /*
  * Project Name: Address Book Application
- * Use Case: Section 2 - UC1
- * Description: Transfers contact information between the client and controller.
+ * Use Case: Section 2 - UC3
+ * Description: Transfers contact details and contact ID between API layers.
  * Name: Asher Mustafa
  * @author Asher
  * Date: 13/11/2026
@@ -11,7 +11,10 @@ package com.addressbook.dto;
 
 public class AddressBookDTO {
 
-    // [Asher Mustafa]: Contact information received from the client
+    // [Asher Mustafa]: Contact ID
+    private int id;
+
+    // [Asher Mustafa]: Contact details
     private String firstName;
     private String lastName;
     private String phoneNumber;
@@ -28,6 +31,14 @@ public class AddressBookDTO {
     }
 
     // [Asher Mustafa]: Getters and setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getFirstName() {
         return firstName;
     }
